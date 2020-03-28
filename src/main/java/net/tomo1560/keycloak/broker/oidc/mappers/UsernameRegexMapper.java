@@ -54,6 +54,15 @@ public class UsernameRegexMapper extends AbstractClaimMapper {
     public static final String REGEX = "regex";
 
     static {
+        ProviderConfigProperty ClaimProperty;
+        ClaimProperty = new ProviderConfigProperty();
+        ClaimProperty.setName(CLAIM);
+        ClaimProperty.setLabel("Claim");
+        ClaimProperty.setHelpText("");
+        ClaimProperty.setType(ProviderConfigProperty.STRING_TYPE);
+        ClaimProperty.setDefaultValue("");
+        configProperties.add(ClaimProperty);
+
         ProviderConfigProperty regexProperty;
         regexProperty = new ProviderConfigProperty();
         regexProperty.setName(REGEX);
@@ -97,15 +106,23 @@ public class UsernameRegexMapper extends AbstractClaimMapper {
     }
 
     @Override
-    public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
+    public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm,
+            IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         String regexString = mapperModel.getConfig().get(REGEX);
-        String username = mapperModel.getConfig().get("preferred_username");
+        String claim = mapperModel.getConfig().get(CLAIM);
+        String username = (String) AbstractClaimMapper.getClaimValue(context, claim);
+        if (username == null || "".equals(username)) {
+            return;
+        }
         if (regexString != null && !"".equals(regexString)) {
             Pattern regex = Pattern.compile(regexString);
             Matcher m = regex.matcher(username);
             if (m.find()) {
-                context.setModelUsername(m.group(1));
-                return;
+                String result = m.group(1);
+                if (result != null && !"".equals(result)) {
+                    context.setModelUsername(result);
+                    return;
+                }
             }
         }
         context.setModelUsername(username);
