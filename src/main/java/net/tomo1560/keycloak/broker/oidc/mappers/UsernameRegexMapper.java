@@ -1,6 +1,5 @@
 package net.tomo1560.keycloak.broker.oidc.mappers;
 
-import org.apache.commons.lang.StringUtils;
 import org.keycloak.broker.oidc.KeycloakOIDCIdentityProviderFactory;
 import org.keycloak.broker.oidc.OIDCIdentityProviderFactory;
 import org.keycloak.broker.oidc.mappers.AbstractClaimMapper;
@@ -101,7 +100,7 @@ public class UsernameRegexMapper extends AbstractClaimMapper {
     public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
         String regexString = mapperModel.getConfig().get(REGEX);
         String username = mapperModel.getConfig().get("preferred_username");
-        if (StringUtils.isNotEmpty(regexString)) {
+        if (regexString != null && !"".equals(regexString)) {
             Pattern regex = Pattern.compile(regexString);
             Matcher m = regex.matcher(username);
             if (m.find()) {
